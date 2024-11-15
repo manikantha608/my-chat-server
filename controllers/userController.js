@@ -1,159 +1,159 @@
+const Conversation = require("../Models/Conversation");
+const User = require("../Models/User");
+const catchAsync = require("../utilities/catchAsync");
 
+// GET ME
+exports.getMe = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    message: "User Info found successfully!",
+    data: {
+      user: req.user,
+    },
+  });
+});
 
-const User = require("../models/User");
-const Conversation = require("../models/Conversation")
-const catchAsync = require("../utilities/catchAsync")
-//GET me
-exports.getMe = catchAsync(async(req,res,next)=>{
-   const {user} = req;
-   res.status(200).json({
-      status:"success",
-      message:"User Info found successfully!",
-      data:{
-        user            
-      }              
-   })                 
-})
+// UPDATE ME
+exports.updateMe = catchAsync(async (req, res, next) => {
+  const { name, jobTitle, bio, country } = req.body;
+  const { _id } = req.user;
 
-//Update me
+  const updatedUser = await User.findByIdAndUpdate(
+    _id,
+    {
+      name,
+      jobTitle,
+      bio,
+      country,
+    },
+    { new: true, validateModifiedOnly: true }
+  );
 
-exports.updateMe = catchAsync(async(req,res,next)=>{
-   const {name,jobTitle,bio,country} = req.body;
-   const {_id} = req.user;
-   
-   const updatedUser = await User.findByIdAndUpdate(_id,{
-       name,jobTitle,bio,country             
-   },{
-      new:true,
-      validateModifiedOnly:true              
-   })
-   res.status(200).json({
-       status:"success",
-       message:"Profile Info Updated Successfully!",
-       data:{
-          user:updatedUser          
-       }             
-   })
-})
+  res.status(200).json({
+    status: "success",
+    message: "Profile Info updated successfully!",
+    data: {
+      user: updatedUser,
+    },
+  });
+});
 
-//Update avatar
-exports.updateAvatar = catchAsync(async(req,res,next)=>{
-   const {avatar} = req.body;
-   const {_id} = req.user;
-   
-   const updatedAvatar = await User.findByIdAndUpdate(_id,{
-         avatar             
-   },{
-      new:true,
-      validateModifiedOnly:true              
-   })
-   res.status(200).json({
-       status:"success",
-       message:"Avatar Updated Successfully!",
-       data:{
-          user:updatedAvatar          
-       }             
-   })
-})
+// UPDATE AVATAR
+exports.updateAvatar = catchAsync(async (req, res, next) => {
+  const { avatar } = req.body;
+  const { _id } = req.user;
 
-//Update password
-exports.updatePassword = catchAsync(async(req,res,next)=>{
-   const {currentPassword,newPassword} = req.body;
-   
-   const {_id} = req.user;
+  const updatedUser = await User.findByIdAndUpdate(
+    _id,
+    {
+      avatar,
+    },
+    { new: true, validateModifiedOnly: true }
+  );
 
-   const user = await User.findById(_id).select("+password");
+  res.status(200).json({
+    status: "success",
+    message: "Avatar updated successfully!",
+    data: {
+      user: updatedUser,
+    },
+  });
+});
 
-   if(!(await user.correctPassword(currentPassword,user.password))){
-      return res.status(401).json({
-        status:"error",
-        message:"Current Password is incorrect"            
-      })              
-   }
+// UPDATE PASSWORD
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+  const { _id } = req.user;
+  const user = await User.findById(_id).select("+password");
 
-   user.password = newPassword;
-   user.passwordChangedAt = Date.now()
+  if (!(await user.correctPassword(currentPassword, user.password))) {
+    return res.status(400).json({
+      status: "error",
+      message: "Current Password is incorrect",
+    });
+  }
 
-   await user.save({})
+  user.password = newPassword;
+  user.passwordChangedAt = Date.now();
 
-   res.status(200).json({
-       status:"success",
-       message:"Password Updated Successfully!"             
-   })
-})
+  await user.save({});
 
-//Get users
-exports.getUsers = catchAsync(async(req,res,next)=>{
-   const {_id} = req.user;
-   
-   const other_verified_users = await User.find({
-       _id:{$ne:_id},
-       verified:true,             
-   }).select("name avatar _id status")
+  res.status(200).json({
+    status: "success",
+    message: "Password updated successfully!",
+  });
+});
 
-   res.status(200).json({
-      status:"success",
-      message:"User found successfully!",
-      data:{
-         users:other_verified_users           
-      }              
-   })
-})
+// GET USERS
+exports.getUsers = catchAsync(async (req, res, next) => {
+  const { _id } = req.user;
+  const other_users = await User.find({ _id: { $ne: _id } }).select(
+    "name _id avatar"
+  );
 
-//Start conversation
-exports.startConversation = catchAsync(async(req,res,next)=>{
-   const {userId} = req.body;
-   const {_id} = req.user;
-   
-   //check if a conversation between those two users already exists
-   let conversation = await Conversation.findOne({
-       participants:{$all:[userId,_id]}
-   })
-   .populate("messages")
-   .populate("participants");
+  res.status(200).json({
+    status: "success",
+    message: "Users found successfully!",
+    data: {
+      users: other_users,
+    },
+  });
+});
 
-   if(conversation){
-     return res.status(200).json({
-       status:"success",
-       data:{
-          conversation          
-       }
-     })               
-   }else{
-      //Create a new conversation
-      let newConversation = await Conversation.create({
-         participants:[userId,_id]           
-      }) 
-      
-      newConversation = await Conversation.findById(newConversation._id)
-      .populate("messages")
-      .populate("participants")
+// START CONVERSATION
+exports.startConversation = catchAsync(async (req, res, next) => {
+  const { userId } = req.body;
+  const { _id } = req.user;
 
-      return res.status(201).json({
-         status:"success",
-         data:{
-           conversation:newConversation
-         }           
-      })
-   }
-})
-
-//get conversations
-exports.getConversations = catchAsync(async(req,res,next)=>{
-    const {_id} = req.user;
-
-    //Find all conversations where the current logged in user is a participant
-    const conversations = await Conversation.find({
-       participants:{$in:[_id]}             
-    })
+  // Check if a conversation between these two users already exists
+  let conversation = await Conversation.findOne({
+    participants: { $all: [userId, _id] },
+  })
     .populate("messages")
     .populate("participants");
 
-    //send the list of conversations as a response
-    res.status(200).json({
-        status:"success",
-        data:{
-           conversations         
-        }            
-    })
-})
+  if (conversation) {
+    return res.status(200).json({
+      status: "success",
+      data: {
+        conversation,
+      },
+    });
+  } else {
+    // Create a new conversation
+    let newConversation = await Conversation.create({
+      participants: [userId, _id],
+    });
+
+    newConversation = await Conversation.findById(newConversation._id)
+      .populate("messages")
+      .populate("participants");
+
+    return res.status(201).json({
+      status: "success",
+      data: {
+        conversation: newConversation,
+      },
+    });
+  }
+});
+
+// GET CONVERSATIONS
+exports.getConversations = catchAsync(async (req, res, next) => {
+  const { _id } = req.user;
+
+  // Find all conversations where the current user is a participant
+  const conversations = await Conversation.find({
+    participants: { $in: [_id] },
+  })
+    .populate("messages")
+    .populate("participants");
+
+  // Send the list of conversations as response
+  res.status(200).json({
+    status: "success",
+    data: {
+      conversations,
+    },
+  });
+});

@@ -1,32 +1,33 @@
-const Conversation = require("../models/Conversation")
+const Conversation = require("../Models/Conversation");
 
-const chatHistoryHandler = async (socket,data) =>{
-   try{
-    //Conversation ID
-    const {conversationId} = data;
-    
-    console.log(data,"conversation Id")
+const chatHistoryHandler = async (socket, data) => {
+  try {
+    // conversation ID
+    const { conversationId } = data;
 
-    //Find the conversation by Id and populate the messages
+    console.log(data, 'conversation id');
 
-    const conversation = await Conversation.findById(conversationId).select("messages").populate("message");
+    // Find the conversation by ID and populate the messages
+    const conversation = await Conversation.findById(conversationId)
+      .select("messages")
+      .populate("messages");
 
-    if(!conversation){
-       return socket.emit("error",{message:"Conversation not found"})             
+    if (!conversation) {
+      return socket.emit("error", { message: "Conversation not found" });
     }
 
-    //Prepare the response data
+    // Prepare the response data
     const res_data = {
-       conversationId,
-       history:conversation.messages             
-    }
+      conversationId,
+      history: conversation.messages,
+    };
 
-    //Emit the chat history back to same socket
-    socket.emit("chat-history",res_data)
-
-   }catch(error){
-     //Handle any                
-   }
-}
+    // Emit the chat history back to the same socket
+    socket.emit("chat-history", res_data);
+  } catch (error) {
+    // Handle any errors and send an error event back
+    socket.emit("error", { message: "Failed to fetch chat history", error });
+  }
+};
 
 module.exports = chatHistoryHandler;

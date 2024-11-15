@@ -1,60 +1,54 @@
-const authSocket = require("./middleware/authSocket")
-const disconnectHandler = require("./socketHandlers/disconnectHandler")
-const chatHistoryHandler = require("./socketHandlers/getMessageHistoryHandler")
-const newConnectionHandler = require("./socketHandlers/newConnectionHandler")
-const newMessageHandler = require("./socketHandlers/newMessageHandler")
-const startTypingHandler = require("./socketHandlers/startTypingHandler")
-const stopTypingHandler = require("./socketHandlers/stopTypingHandler")
+const authSocket = require("./middleware/authSocket");
+const disconnectHandler = require("./socketHandlers/disconnectHandler");
+const chatHistoryHandler = require("./socketHandlers/getMessageHistoryHandler");
+const newConnectionHandler = require("./socketHandlers/newConnectionHandler");
+const newMessageHandler = require("./socketHandlers/newMessageHandler");
+const startTypingHandler = require("./socketHandlers/startTypingHandler");
+const stopTypingHandler = require("./socketHandlers/stopTypingHandler");
 
-const registerSocketServer = (server)=>{
-   const io = require("socket.io")(server,{
-        cors:{
-          origin:"*",
-          method:["GET","POST"]          
-        }            
-   })
-   
-   io.use((socket,next)=>{
-     authSocket(socket,next)               
-   })
+const registerSocketServer = (server) => {
+  const io = require("socket.io")(server, {
+    cors: {
+      origin: "*",
+      method: ["GET", "POST"],
+    },
+  });
 
-   io.on("connection",(socket)=>{
-      console.log("User connected")  
-      console.log(socket.id)  
-      
-      // **DONE: newConnectionHandler
-       newConnectionHandler(socket,io)
+  io.use((socket, next) => {
+    authSocket(socket, next);
+  });
 
-      //**DONE : disconnectHandler
-      socket.on("disconnect",()=>{
-         disconnectHandler(socket)
-      })
+  io.on("connection", (socket) => {
+    console.log("user connected");
+    console.log(socket.id);
 
-      //**DONE : newMessagehandler
-      socket.on("new-message",(data)=>{
-        newMessageHandler(socket,data,io)
-      })
+    // newConnectionHandler
+    newConnectionHandler(socket, io);
 
-      //**DONE : chatHistoryHandler
-      socket.on("direct-chat-history",(data)=>{
-         chatHistoryHandler(socket,data)
-      })
+    socket.on("disconnect", () => {
+      disconnectHandler(socket);
+    });
 
-      //**DONE : startTypingHandler
-      socket.on("start-typing",(data)=>{
-         startTypingHandler(socket,data,io)
-      })
+    socket.on("new-message", (data) => {
+      newMessageHandler(socket, data, io);
+    });
 
-      //**DONE :stopTypingHandler
-      socket.on("stop-typing",(data)=>{
-        stopTypingHandler(socket,data,io)
-      })
+    socket.on("direct-chat-history", (data) => {
+      chatHistoryHandler(socket, data);
+    });
 
+    socket.on("start-typing", (data) => {
+      startTypingHandler(socket, data, io);
+    });
 
-   })
+    socket.on("stop-typing", (data) => {
+      stopTypingHandler(socket, data, io);
+    });
+  });
 
+  setInterval(() => {
+    // emit online user
+  }, [1000 * 8]);
+};
 
-
-}
-
-module.exports = {registerSocketServer}
+module.exports = { registerSocketServer };
