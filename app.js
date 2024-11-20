@@ -3,9 +3,11 @@ const morgan = require("morgan");
 
 const routes = require("./routes/index");
 
-const rateLimit = require("express-rate-limit"); // Basic rate-limiting middleware for Express. Use to limit repeated requests to public APIs and/or endpoints such as password reset.
+const rateLimit = require("express-rate-limit"); 
+// Basic rate-limiting middleware for Express. Use to limit repeated requests to public APIs and/or endpoints such as password reset.
 
-const helmet = require("helmet"); // Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
+const helmet = require("helmet");
+ // Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
 
 // These headers are set in response by helmet
 
@@ -23,7 +25,8 @@ const helmet = require("helmet"); // Helmet helps you secure your Express apps b
 // X-Permitted-Cross-Domain-Policies: none
 // X-XSS-Protection: 0
 
-const mongosanitize = require("express-mongo-sanitize"); // This module searches for any keys in objects that begin with a $ sign or contain a ., from req.body, req.query or req.params.
+const mongosanitize = require("express-mongo-sanitize"); 
+// This module searches for any keys in objects that begin with a $ sign or contain a ., from req.body, req.query or req.params.
 
 // By default, $ and . characters are removed completely from user-supplied input in the following places:
 // - req.body
