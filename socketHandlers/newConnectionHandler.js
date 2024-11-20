@@ -1,4 +1,4 @@
-const User = require("../Models/User");
+const User = require("../models/User");
 
 const newConnectionHandler = async (socket, io) => {
   const { userId } = socket.user;
