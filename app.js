@@ -74,6 +74,10 @@ const limiter = rateLimit({
 
 app.use("/api", limiter);
 
+app.get("/",(req,res)=>{
+  res.status(200).send("Wechat-backend working successfully")
+})
+
 app.use(express.urlencoded({
     extended: true,
 }))
