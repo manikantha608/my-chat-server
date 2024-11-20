@@ -1,5 +1,5 @@
-const Conversation = require("../Models/Conversation");
-const User = require("../Models/User");
+const Conversation = require("../models/Conversation");
+const User = require("../models/User");
 const catchAsync = require("../utilities/catchAsync");
 
 // GET ME

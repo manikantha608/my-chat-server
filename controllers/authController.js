@@ -1,4 +1,4 @@
-const User = require("../Models/User");
+const User = require("../models/User");
 const catchAsync = require("../utilities/catchAsync");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
