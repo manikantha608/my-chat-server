@@ -106,7 +106,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
     return JWTTimeStamp < changedTimeStamp;
   }
 
-  // FALSE MEANS NOT CHANGED
+  
   return false;
 };
 
